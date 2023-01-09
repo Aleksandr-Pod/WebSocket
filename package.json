@@ -5,7 +5,7 @@
   "main": "App.js",
   "scripts": {
     "start": "node App",
-    "start:dev": "nodemon App",
+    "dev": "nodemon App",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Podmazko Aleksandr",
