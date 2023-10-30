@@ -3,10 +3,11 @@ const wsServer = new ws.Server({ port: 1919 });
 
 let users = [];
 const usersLimit = 2;
-const allColors = ["black", "red", "green", "blue", "yellow", "white"];
+// const userColors = ["black", "red", "green", "blue", "yellow", "white"];
+const usersColors = { black: "", red: "", green: "", blue: "", yellow: "", white: "" };
 const clients = [];
 
-wsServer.on("connection", (newClient) => {
+wsServer.on("connection", newClient => {
   // Проверка на лимит клиентов сервера ...
   // if (clients.length === clientsLimit) {
   //   newClient.send("users limit");
@@ -26,7 +27,11 @@ wsServer.on("connection", (newClient) => {
 
   newClient.on('message', data => { // обработка входящих сообщений для каждого нового клиента
     const message = JSON.parse(data);
-
+    // message: {
+    //  newUser: "",
+    //  exit: {userName: "", color: ""} 
+    // }
+  
     if (message.newUser) {
       // проверка на лимит юзеров ..
       if (users.length === usersLimit) {
@@ -35,8 +40,8 @@ wsServer.on("connection", (newClient) => {
       }
       const newUserData = {
         newUserName: message.newUser,
-        position: {y:0, x:users.length},
-        color: allColors[users.length],
+        position: {y:0, x:0},
+        color: getEmptyColor(message.newUser),
         timeout: 5
       }
       users.push(newUserData);
@@ -50,6 +55,7 @@ wsServer.on("connection", (newClient) => {
     if (message.exit) {
       const {userName, color} = message.exit;
       users = users.filter(user => user.color !== color);
+      console.log(`user ${userName} leave, users in game: ${users.length}`);
 
       clients.forEach(client => {
         client.send(JSON.stringify({userLeft: userName}));
@@ -80,9 +86,21 @@ wsServer.on("connection", (newClient) => {
   })
 })
 
-function removeClient (name) {
+function removeUserFromUsers(name) {
   console.log('user disconnected !');
   users = users.filter(user => user.usersName !== name);
+  setEmptyColor(name);
+}
+function removeClient (name) {
   // находим удаляемого клиента
-  exClient = clients.filter(client => client)
+  // exClient = clients.filter(client => client)
+}
+function getEmptyColor(userName) {
+  const color = Object.keys(usersColors).find(el => usersColors[el] === "")
+  usersColors[color] = userName;
+  return color;
+}
+function setEmptyColor(userName) {
+  const color = Object.keys(usersColors).find(el => usersColors[el] === userName)
+  usersColors[color] = "";
 }
